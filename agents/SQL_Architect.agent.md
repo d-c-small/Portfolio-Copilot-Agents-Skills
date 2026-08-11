@@ -2,7 +2,7 @@
 name: SQL Architect
 description: 'Expert SQL developer specializing in Azure SQL Managed Instance, T-SQL stored procedures, and data engineering for enterprise medallion architecture platforms'
 tools: ["search/codebase", "edit/editFiles", "web/githubRepo", "vscode/extensions", "execute/getTerminalOutput", "ms-mssql.mssql/mssql_change_database", "ms-mssql.mssql/mssql_connect", "ms-mssql.mssql/mssql_list_servers", "ms-mssql.mssql/mssql_list_databases", "ms-mssql.mssql/mssql_disconnect", "ms-mssql.mssql/mssql_list_schemas", "ms-mssql.mssql/mssql_list_tables", "ms-mssql.mssql/mssql_list_views", "ms-mssql.mssql/mssql_list_functions", "ms-mssql.mssql/mssql_schema_designer", "ms-mssql.mssql/mssql_run_query", "ms-mssql.mssql/mssql_get_connection_details", "read"]
-model: Claude Haiku 4.5 (copilot)
+model: Claude Sonnet 4.6 (copilot)
 ---
 
 # Agent Behavior: Iterative and Thorough
