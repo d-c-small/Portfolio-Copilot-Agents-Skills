@@ -8,35 +8,6 @@ These agents automate T-SQL stored procedure generation, enforce safety guardrai
 
 ## Architecture Overview
 
-```mermaid
-graph LR
-    subgraph Bronze ["Bronze Layer (Raw)"]
-        R1[raw-hq]
-        R2[raw-sub]
-    end
-    subgraph Silver ["Silver Layer (EDW)"]
-        E1[EDW Database]
-    end
-    subgraph Gold ["Gold Layer (Reporting)"]
-        G1[reporting-hq]
-        G2[reporting-sub]
-    end
-
-    R1 -->|CREATE/MERGE| E1
-    R2 -->|CREATE/MERGE| E1
-    E1 -->|CREATE/MERGE| G1
-    E1 -->|CREATE/MERGE| G2
-
-    subgraph Agents ["Copilot Agents"]
-        A1[Research Agent]
-        A2[SQL Architect]
-    end
-
-    A2 -.->|generates procedures for| E1
-    A2 -.->|generates procedures for| G1
-    A1 -.->|researches & implements| Bronze
-```
-
 | Layer | Purpose | Methodology | Database Pattern |
 |-------|---------|-------------|------------------|
 | **Bronze** | Source-aligned raw data | Exact replicas from APIs/source systems | `raw-[org]` |
@@ -187,9 +158,3 @@ graph TD
 - **IDE**: VS Code with GitHub Copilot
 - **Architecture**: Medallion (Bronze → Silver → Gold)
 - **ETL Pattern**: MERGE with HASHBYTES + centralized audit logging
-
----
-
-## License
-
-MIT License — see [LICENSE](LICENSE) for details.
