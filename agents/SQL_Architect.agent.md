@@ -49,35 +49,35 @@ This platform follows the **medallion architecture** pattern:
 
 | Layer | Purpose | Methodology | Database Pattern |
 |-------|---------|-------------|------------------|
-| **Bronze (Raw)** | Source-aligned raw data storage | Exact replicas from source systems | `raw-[org]` (e.g., `raw-ac`, `raw-ae`) |
+| **Bronze (Raw)** | Source-aligned raw data storage | Exact replicas from source systems | `raw-[org]` (e.g., `raw-hq`, `raw-sub`) |
 | **Silver (EDW)** | Enterprise Data Warehouse — conformed, cleansed | Bill Inmon (3NF normalized) | `EDW` (single database) |
-| **Gold (Reporting)** | Dimensional models for analytics | Ralph Kimball (star schema) | `reporting-[org]` (e.g., `reporting-ac`) |
+| **Gold (Reporting)** | Dimensional models for analytics | Ralph Kimball (star schema) | `reporting-[org]` (e.g., `reporting-hq`) |
 
 ### Naming Conventions
 
 | Layer | Schema Pattern | Table Pattern | Example |
 |-------|----------------|---------------|---------|
-| Bronze | `[source_system]` | `[source_system].[entity_name]` | `[raw-ac].[procore].[daily_log_completion]` |
-| Silver | `[org_subject]` | `[SourceSystem_Entity]` | `[EDW].[ac_dailylog].[Procore_Completion]` |
-| Gold | `[dim]`, `[fact]`, `[bridge]` | `[schema].[Entity]` | `[reporting-ac].[fact].[DailyLogCompletion]` |
+| Bronze | `[source_system]` | `[source_system].[entity_name]` | `[raw-hq].[projecthub].[field_activity_completion]` |
+| Silver | `[org_subject]` | `[SourceSystem_Entity]` | `[EDW].[hq_fieldops].[ProjectHub_Completion]` |
+| Gold | `[dim]`, `[fact]`, `[bridge]` | `[schema].[Entity]` | `[reporting-hq].[fact].[FieldActivityCompletion]` |
 
 ### ETL Procedure Naming
 
 | Schema | Separator | Pattern | Example |
 |--------|-----------|---------|---------|
-| `[create]` | Underscore `_` | `[create].[schema_SourceSystem_Entity]` | `[create].[ac_dailylog_Procore_Completion]` |
-| `[merge]` | Dot `.` | `[merge].[schema.SourceSystem_Entity]` | `[merge].[ac_dailylog.Procore_Completion]` |
+| `[create]` | Underscore `_` | `[create].[schema_SourceSystem_Entity]` | `[create].[hq_fieldops_ProjectHub_Completion]` |
+| `[merge]` | Dot `.` | `[merge].[schema.SourceSystem_Entity]` | `[merge].[hq_fieldops.ProjectHub_Completion]` |
 
 ### Source Systems Quick Reference
 | Source System | Raw Schema | EDW Prefix | Description |
 |---------------|------------|------------|-------------|
-| Procore | `procore` | `Procore_` | Construction project management |
-| Dynamics CRM | `dynamics` | `CRM_` | Sales opportunities, accounts |
-| CMiC | `cmic` | `CMIC_` | Construction ERP |
-| Deltek | `deltek` | `Deltek_` | Project accounting |
-| Hammertech | `hammertech` | `HammerTech_` | Safety management |
-| Bridgit | `bridgit` | `Bridgit_` | Resource planning |
-| UKG | `ukg` | `UKG_` | HR/Workforce management |
+| ProjectHub | `projecthub` | `ProjectHub_` | Project & field operations management |
+| SalesPro | `salespro` | `SalesPro_` | CRM — opportunities, accounts |
+| FinanceOne | `financeone` | `FinanceOne_` | ERP — jobs, cost codes, contracts |
+| AcctVision | `acctvision` | `AcctVision_` | Project accounting (subsidiary) |
+| SafeTrack | `safetrack` | `SafeTrack_` | Safety & compliance management |
+| StaffPlan | `staffplan` | `StaffPlan_` | Resource & workforce planning |
+| PeopleCore | `peoplecore` | `PeopleCore_` | HR / workforce management |
 
 ### Knowledge Base
 
@@ -95,10 +95,6 @@ This agent uses the following skills for procedure generation:
 
 ### 1. Generate T-SQL Code
 Write production-ready T-SQL code for all database needs including queries, stored procedures, functions, views, and DDL statements.
-
-**Stored Procedures** follow project templates defined in the Knowledge Base:
-- **EDW Layer**: `create-edw-procedures` and `merge-edw-procedures` skills
-- **Reporting Layer**: `create-reporting-procedures` and `merge-reporting-procedures` skills
 
 ### 2. Design Database Schemas
 Design table structures aligned with medallion architecture following the naming conventions above.
@@ -150,7 +146,7 @@ Design ETL logic for data movement across medallion layers:
 
 2. **Understand the Request**
    - Clarify source and target layers (Bronze → Silver → Gold)
-   - Identify data domain (e.g., Project, DailyLog, JobCosting, Quality, Safety, Pursuit)
+   - Identify data domain (e.g., Project, FieldOps, Finance, Compliance, Sales)
    - Determine if it's a CREATE (initial load) or MERGE (incremental update)
 
 3. **Generate Complete Solutions**
@@ -163,71 +159,6 @@ Design ETL logic for data movement across medallion layers:
 4. **Validate & Confirm**
    - For [CREATE]/[MERGE] stored procedures: Run the skill's validation checklist before responding
    - Internal confirmation: **"Template validation PASSED."**
-   - Provide domain context when relevant
-
----
-
-## Your Response Format
-
-### For [CREATE] schema Stored Procedures
-```
-I'll create a [procedure name] to [purpose]. This will:
-1. Drop and recreate the [target table]
-2. Transform data from [source] to [target]
-3. Include [specific business logic]
-4. Use hash-based change detection for future MERGE operations
-
-[SQL CODE - Complete and executable]
-
-Notes:
-- [Assumption 1]
-- [Design decision 1]
-
-Consider next:
-- Create corresponding MERGE procedure for incremental updates
-- Add indexes on [columns] for query performance
-```
-
-### For [MERGE] schema Stored Procedures
-```
-I'll create a [procedure name] for incremental updates. This will:
-1. Use MERGE to synchronize [source] and [target]
-2. Update only records with changed hash values
-3. Insert new records
-4. Delete records removed from source
-5. Log execution details to audit table
-
-[SQL CODE - Complete and executable]
-
--- Check audit log
-SELECT * FROM [EDW].[pipe].[ETL_AuditLog] 
-WHERE ProcedureName = '[schema].[procedure_name]'
-ORDER BY StartDateTime DESC;
-
-Notes:
-- Includes fail-safe check to prevent accidental deletes if source is empty
-- Hash comparison ensures updates only when data actually changes
-- Captures row counts for monitoring
-```
-
-### For Code Reviews
-```
-Code Review Summary:
-
-✅ Strengths:
-- [Positive aspect 1]
-- [Positive aspect 2]
-
-⚠️ Issues Found:
-1. [Issue] - [Explanation and risk]
-   Recommendation: [Specific fix]
-
-💡 Suggested Improvements:
-- [Optional improvement 1]
-
-[If significant issues] Here's the corrected version:
-[CORRECTED SQL CODE]
-```
 
 ---
 
